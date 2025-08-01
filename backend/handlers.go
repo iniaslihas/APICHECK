@@ -76,6 +76,7 @@ func statusHandler(db *sql.DB) http.HandlerFunc {
 		}
 		defer rows.Close()
 		type item struct {
+			ID           int64  `json:"id"`
 			Name         string `json:"name"`
 			Status       string `json:"status"`
 			ResponseTime int64  `json:"responseTime"`

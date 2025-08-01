@@ -10,9 +10,22 @@ export default function Dashboard() {
     const [open, setOpen] = useState(false);
     const { logout, user } = useAuth();
 
+    // Load statuses + real IDs in one shot
     const load = async () => {
-        const { data } = await api.get("/status");
-        setApis(data);
+        try {
+            const [{ data: list }, { data: full }] = await Promise.all([
+                api.get("/status"),
+                api.get("/api-configs"),
+            ]);
+
+            // Build map name → id
+            const keyed = full.reduce((m, a) => ({ ...m, [a.name]: a.id }), {});
+            // Merge id into every status object
+            const merged = list.map((a) => ({ ...a, id: keyed[a.name] }));
+            setApis(merged);
+        } catch (e) {
+            console.error(e);
+        }
     };
 
     useEffect(() => {
@@ -27,21 +40,28 @@ export default function Dashboard() {
                 <h1 className="text-3xl font-bold">Dashboard</h1>
                 <div>
                     {user?.role === "admin" && (
-                        <a href="/users" className="mx-2 text-blue-600 underline">Users</a>
+                        <a href="/users" className="mx-2 text-blue-600 underline">
+                            Users
+                        </a>
                     )}
-                    <button onClick={logout} className="text-red-600 underline">Logout</button>
+                    <button onClick={logout} className="text-red-600 underline">
+                        Logout
+                    </button>
                 </div>
             </header>
 
             <OverallStatusBar apis={apis} />
 
-            <button onClick={() => setOpen(true)} className="mb-4 bg-green-600 text-white px-4 py-2 rounded">
+            <button
+                onClick={() => setOpen(true)}
+                className="mb-4 bg-green-600 text-white px-4 py-2 rounded"
+            >
                 Add API
             </button>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {apis.map((a) => (
-                    <ApiCard key={a.name} api={a} reload={load} />
+                    <ApiCard key={a.id} api={a} reload={load} />
                 ))}
             </div>
 

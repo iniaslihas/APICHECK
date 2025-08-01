@@ -38,7 +38,9 @@ func checkAPI(db *sql.DB, api Api) {
 	start := time.Now()
 	timeout, _ := time.ParseDuration(api.Timeout)
 	client := http.Client{Timeout: timeout}
-	resp, err := client.Get(api.URL)
+	req, _ := http.NewRequest("GET", api.URL, nil)
+	req.Header.Set("User-Agent", "api-status-dashboard/1.0")
+	resp, err := client.Do(req)
 	duration := time.Since(start).Milliseconds()
 
 	status := "UP"

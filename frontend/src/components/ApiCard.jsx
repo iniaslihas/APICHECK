@@ -6,8 +6,14 @@ export default function ApiCard({ api: a, reload }) {
     const canEdit = user?.role === "admin" || a.ownerId === user?.id;
 
     const del = async () => {
-        await api.delete(`/api-configs/${a.id}`);
-        reload();
+        if (!confirm("Delete this API?")) return;
+        try {
+            await api.delete(`/api-configs/${api.id}`);
+            console.log("Deleting api.id =", api.id);
+            reload();          // refresh the list
+        } catch (e) {
+            alert("Delete failed: " + (e.response?.data || e.message));
+        }
     };
 
     return (
